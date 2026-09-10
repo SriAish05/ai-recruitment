@@ -15,6 +15,10 @@ public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
 
     List<Evaluation> findByStatus(EvaluationStatus status);
 
+    long countByStatus(EvaluationStatus status);
+
+    List<Evaluation> findTop5ByOrderByCreatedAtDesc();
+
     List<Evaluation> findByCandidateIdAndJobIdAndStage(Long candidateId,
                                                          Long jobId,
                                                          Stage stage);

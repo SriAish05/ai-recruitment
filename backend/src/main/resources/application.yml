@@ -18,10 +18,10 @@ spring:
         format_sql: true
 
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: your_mailtrap_username
-    password: your_mailtrap_password
+    host: smtp.mailtrap.io
+    port: 587
+    username: placeholder_username
+    password: placeholder_password
     properties:
       mail:
         smtp:
@@ -35,6 +35,8 @@ app:
     expiration: 86400000
   aiservice:
     url: http://localhost:8001
+  mail:
+    from: recruit@example.com
 
 logging:
   level:

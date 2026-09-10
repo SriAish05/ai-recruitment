@@ -19,6 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InterviewEvaluationService {
 
+    private final EvaluationMapper evaluationMapper;
     private final CandidateRepository candidateRepository;
     private final JobRepository jobRepository;
     private final ResumeRepository resumeRepository;
@@ -73,20 +74,6 @@ public class InterviewEvaluationService {
                         .build()
         );
 
-        return toDto(saved);
-    }
-
-    private EvaluationDto toDto(Evaluation e) {
-        return EvaluationDto.builder()
-                .id(e.getId())
-                .candidateId(e.getCandidate().getId())
-                .jobId(e.getJob().getId())
-                .stage(e.getStage().name())
-                .matchScore(e.getMatchScore())
-                .recommendation(e.getRecommendation().name())
-                .rationale(e.getRationale())
-                .status(e.getStatus().name())
-                .createdAt(e.getCreatedAt())
-                .build();
+        return evaluationMapper.toDto(saved);
     }
 }

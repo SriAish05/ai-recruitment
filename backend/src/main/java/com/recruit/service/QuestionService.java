@@ -19,6 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class QuestionService {
 
+    private final EvaluationMapper evaluationMapper;
     private final ResumeRepository resumeRepository;
     private final EvaluationRepository evaluationRepository;
     private final AiClient aiClient;
@@ -57,20 +58,6 @@ public class QuestionService {
         evaluation.setQuestions(questionsJson);
         Evaluation saved = evaluationRepository.save(evaluation);
 
-        return toDto(saved);
-    }
-
-    private EvaluationDto toDto(Evaluation e) {
-        return EvaluationDto.builder()
-                .id(e.getId())
-                .candidateId(e.getCandidate().getId())
-                .jobId(e.getJob().getId())
-                .stage(e.getStage().name())
-                .matchScore(e.getMatchScore())
-                .recommendation(e.getRecommendation().name())
-                .rationale(e.getRationale())
-                .status(e.getStatus().name())
-                .createdAt(e.getCreatedAt())
-                .build();
+        return evaluationMapper.toDto(saved);
     }
 }

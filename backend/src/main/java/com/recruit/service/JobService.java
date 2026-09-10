@@ -20,9 +20,7 @@ public class JobService {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .build();
-        Job saved = jobRepository.save(job);
-        dto.setId(saved.getId());
-        return dto;
+        return toDto(jobRepository.save(job));
     }
 
     public List<JobDto> getAllJobs() {
@@ -46,6 +44,7 @@ public class JobService {
                 .id(job.getId())
                 .title(job.getTitle())
                 .description(job.getDescription())
+                .createdAt(job.getCreatedAt())
                 .build();
     }
 }

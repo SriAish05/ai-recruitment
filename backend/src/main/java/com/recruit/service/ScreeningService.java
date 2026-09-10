@@ -14,6 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ScreeningService {
 
+    private final EvaluationMapper evaluationMapper;
     private final ResumeRepository resumeRepository;
     private final EvaluationRepository evaluationRepository;
     private final AiClient aiClient;
@@ -45,20 +46,6 @@ public class ScreeningService {
                         .build()
         );
 
-        return toDto(saved);
-    }
-
-    private EvaluationDto toDto(Evaluation e) {
-        return EvaluationDto.builder()
-                .id(e.getId())
-                .candidateId(e.getCandidate().getId())
-                .jobId(e.getJob().getId())
-                .stage(e.getStage().name())
-                .matchScore(e.getMatchScore())
-                .recommendation(e.getRecommendation().name())
-                .rationale(e.getRationale())
-                .status(e.getStatus().name())
-                .createdAt(e.getCreatedAt())
-                .build();
+        return evaluationMapper.toDto(saved);
     }
 }
