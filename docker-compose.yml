@@ -1,0 +1,70 @@
+version: "3.9"
+
+networks:
+  recruit-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: recruit-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: recruitdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - recruit-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    container_name: recruit-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/recruitdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      APP_JWT_SECRET: ${JWT_SECRET}
+      APP_AISERVICE_URL: http://ai-service:8000
+      SMTP_USERNAME: ${SMTP_USERNAME:-placeholder}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-placeholder}
+    networks:
+      - recruit-network
+
+  ai-service:
+    build: ./ai-service
+    container_name: recruit-ai-service
+    ports:
+      - "8000:8000"
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      MODEL_NAME: ${MODEL_NAME:-gemini-2.0-flash}
+    networks:
+      - recruit-network
+
+  frontend:
+    build: ./frontend
+    container_name: recruit-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - recruit-network

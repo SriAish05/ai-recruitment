@@ -99,6 +99,16 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Flyway: versioned database migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
         <!-- Test: JUnit 5, Mockito, Spring test context, MockMvc -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

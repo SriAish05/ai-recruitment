@@ -3,17 +3,15 @@
 ## Architecture Overview
 Three-tier system. Every boundary exists for a reason. Never collapse them.
 ```
-
-Streamlit (:8501) → Spring Boot (:8080) → Python FastAPI + LangGraph (:8000) → LLM API
-
+React (:5173 dev / :80 Docker) → Spring Boot (:8080) → Python FastAPI + LangGraph (:8000) → LLM API
 ```
 
-- backend/    : Spring Boot 3.3, Java 17, Maven, MySQL, Spring Data JPA, Spring Security (JWT). SYSTEM OF RECORD. Base package: com.recruit
+- backend/    : Spring Boot 3.3, Java 17, Maven, MySQL, Spring Data JPA, Spring Security (JWT), Flyway. SYSTEM OF RECORD. Base package: com.recruit
 - ai-service/ : Python 3.11, FastAPI, LangGraph, Pydantic. STATELESS AI BRAIN — no database, takes text in returns JSON out.
-- frontend/   : Streamlit. THIN CLIENT — talks ONLY to Spring Boot via JWT. Zero AI logic here.
+- frontend/   : React 19 + Vite + TypeScript. THIN CLIENT — talks ONLY to Spring Boot via JWT. Zero AI logic here.
 
 ## Hard Rules — never break these
-1. Streamlit never calls ai-service directly. Only Spring Boot calls ai-service.
+1. React frontend never calls ai-service directly. Only Spring Boot calls ai-service.
 2. Entities never leave the service layer. DTOs cross every boundary.
 3. Use constructor injection everywhere in Java. No @Autowired on fields.
 4. Every AI response is a validated Pydantic model with a plain-English rationale field.
@@ -32,14 +30,35 @@ Streamlit (:8501) → Spring Boot (:8080) → Python FastAPI + LangGraph (:8000)
 - Prompts live in agents/prompts.py — not inline in node functions
 - Use typing_extensions.TypedDict for LangGraph state
 
-## Database: MySQL, db name = recruitdb
+## Database: MySQL 8, db name = recruitdb
 Tables: users, jobs, candidates, resumes, evaluations
-See decisions.md for full schema.
+Schema is managed by Flyway — see db/migration/V1__init_schema.sql.
+See decisions.md for full design rationale.
+
+## Spring Profiles
+- dev  (default): ddl-auto=update, show-sql=true, Mailtrap, DEBUG logging
+- prod:           ddl-auto=validate, show-sql=false, real SMTP, INFO logging
+Switch with SPRING_PROFILES_ACTIVE env var or application.yml spring.profiles.active.
+
+## Flyway
+Migrations live in backend/src/main/resources/db/migration/.
+Naming: V{n}__{description}.sql (two underscores).
+baseline-on-migrate=true allows Flyway to adopt an existing database.
+In prod, Flyway is the sole source of truth; ddl-auto=validate only checks consistency.
+
+## Docker
+docker-compose.yml at project root starts: mysql → backend → ai-service → frontend.
+Copy .env.example to .env and fill in secrets before running.
+Backend image: multi-stage Maven build → eclipse-temurin:17-jre-alpine.
+AI service image: python:3.11-slim.
+Frontend image: multi-stage Node build → nginx:alpine with nginx.conf proxy.
 
 ## Ports
-- Spring Boot : 8080
-- FastAPI      : 8000
-- Streamlit   : 8501
+- React dev server : 5173
+- React (Docker)   : 80
+- Spring Boot      : 8080
+- FastAPI          : 8000
+- MySQL            : 3306
 
 ## What to do when asked to generate code
 1. Pause and describe what you are about to create (Plan Mode behavior)

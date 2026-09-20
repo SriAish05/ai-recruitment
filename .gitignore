@@ -1,29 +1,39 @@
-# Java
-backend/target/
-*.class
-
-# Python
-ai-service/__pycache__/
-ai-service/.venv/
-ai-service/.env
-*.pyc
-
-# Streamlit
-frontend/__pycache__/
-frontend/.env
-
-# Secrets - never commit these
+# ── Secrets ───────────────────────────────────────────────────
 .env
 *.env
 *.key
 
-# IDE
+# ── Java / Maven ──────────────────────────────────────────────
+backend/target/
+*.class
+*.jar
+
+# ── Python ────────────────────────────────────────────────────
+ai-service/__pycache__/
+ai-service/.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# ── Node / React ──────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# ── Uploads / Logs ────────────────────────────────────────────
+uploads/
+logs/
+*.log
+
+# ── Docker overrides ─────────────────────────────────────────
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ── IDE ───────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.iml
 
-# Logs
-logs/*.log
-
-# OS
+# ── OS ────────────────────────────────────────────────────────
 .DS_Store
+Thumbs.db
