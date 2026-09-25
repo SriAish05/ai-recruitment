@@ -19,6 +19,18 @@ import {
 } from '@/components/ui/select'
 import { getErrorMessage } from '@/lib/errors'
 
+function nameFromFilename(filename: string): string {
+  const stopWords = new Set(['resume', 'cv', 'general', 'updated', 'new', 'final', 'latest'])
+  const words = filename
+    .replace(/\.[^/.]+$/, '')       // drop extension
+    .replace(/\s*\(\d+\)\s*$/, '')  // drop trailing "(1)"
+    .replace(/[-_]+/g, ' ')         // underscores/hyphens → spaces
+    .trim()
+    .split(/\s+/)
+    .filter((w) => !stopWords.has(w.toLowerCase()))
+  return words.slice(0, 3).join(' ')
+}
+
 const schema = z.object({
   jobId: z.string().min(1, 'Select a job'),
   candidateName: z.string().trim().min(2, 'Enter the candidate name'),
@@ -42,6 +54,7 @@ export function ScreenForm({ onSubmit, busy, busyLabel }: ScreenFormProps) {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<ScreenFormValues>({
     resolver: zodResolver(schema),
@@ -171,7 +184,14 @@ export function ScreenForm({ onSubmit, busy, busyLabel }: ScreenFormProps) {
             <FileDropzone
               id="resume-file"
               file={field.value ?? null}
-              onChange={(file) => field.onChange(file ?? undefined)}
+              onChange={(file) => {
+                field.onChange(file ?? undefined)
+                if (file && !watch('candidateName')) {
+                  setValue('candidateName', nameFromFilename(file.name), {
+                    shouldValidate: true,
+                  })
+                }
+              }}
               disabled={busy}
               error={errors.file?.message}
             />

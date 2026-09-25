@@ -2,32 +2,40 @@ package com.recruit.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class AiClient {
 
-    private final RestClient restClient;
+    private final RestTemplate restTemplate;
+    private final String baseUrl;
 
     public AiClient(@Value("${app.aiservice.url}") String aiServiceUrl) {
-        this.restClient = RestClient.builder()
-                .baseUrl(aiServiceUrl)
-                .build();
+        this.restTemplate = new RestTemplate();
+        this.baseUrl = aiServiceUrl;
+    }
+
+    private HttpEntity<Map<String, String>> jsonBody(Map<String, String> body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return new HttpEntity<>(body, headers);
     }
 
     public Map<String, Object> screenResume(String jobDescription, String resumeText) {
         try {
-            return restClient.post()
-                    .uri("/screen")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("job_description", jobDescription,
-                                 "resume_text", resumeText))
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+            Map<String, String> body = new HashMap<>();
+            body.put("job_description", jobDescription);
+            body.put("resume_text", resumeText);
+            return restTemplate.exchange(
+                    baseUrl + "/screen", HttpMethod.POST,
+                    jsonBody(body),
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            ).getBody();
         } catch (Exception e) {
             throw new RuntimeException("AI service unavailable: " + e.getMessage(), e);
         }
@@ -35,13 +43,14 @@ public class AiClient {
 
     public Map<String, Object> runPipeline(String jobDescription, String resumeText) {
         try {
-            return restClient.post()
-                    .uri("/pipeline/run")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("job_description", jobDescription,
-                                 "resume_text", resumeText))
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+            Map<String, String> body = new HashMap<>();
+            body.put("job_description", jobDescription);
+            body.put("resume_text", resumeText);
+            return restTemplate.exchange(
+                    baseUrl + "/pipeline/run", HttpMethod.POST,
+                    jsonBody(body),
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            ).getBody();
         } catch (Exception e) {
             throw new RuntimeException("AI service unavailable: " + e.getMessage(), e);
         }
@@ -51,14 +60,15 @@ public class AiClient {
                                                   String resumeText,
                                                   String transcript) {
         try {
-            return restClient.post()
-                    .uri("/evaluate")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("job_description", jobDescription,
-                                 "resume_text", resumeText,
-                                 "interview_transcript", transcript))
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+            Map<String, String> body = new HashMap<>();
+            body.put("job_description", jobDescription);
+            body.put("resume_text", resumeText);
+            body.put("interview_transcript", transcript);
+            return restTemplate.exchange(
+                    baseUrl + "/evaluate", HttpMethod.POST,
+                    jsonBody(body),
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            ).getBody();
         } catch (Exception e) {
             throw new RuntimeException("AI service unavailable: " + e.getMessage(), e);
         }

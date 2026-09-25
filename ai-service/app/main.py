@@ -3,11 +3,18 @@ load_dotenv()
 
 from uuid import uuid4
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from google.api_core.exceptions import GoogleAPIError
 from app.schemas import ScreenRequest, ScreeningResult, EvaluationRequest, EvaluationResult
 from app.graph.pipeline import compiled_graph
 from app.agents.evaluation_agent import evaluation_node
 
 app = FastAPI(title="AI Recruitment Service")
+
+
+@app.exception_handler(GoogleAPIError)
+def gemini_error(request, exc: GoogleAPIError):
+    return JSONResponse(status_code=502, content={"detail": f"Gemini error: {str(exc)[:300]}"})
 
 
 @app.get("/health")
